@@ -9,20 +9,20 @@ Grand Total: 3367 settlements
 
 EMPIRE SETTLEMENTS BY PROVINCE
 --------------------------------------------------------------------------------
-Averland             - 269 settlements,    295,677 total population
-Hochland             - 107 settlements,    102,911 total population
-Middenland           - 423 settlements,    403,286 total population
-Mootland             -  50 settlements,     23,201 total population
-Nordland             - 219 settlements,    183,125 total population
-Ostermark            - 240 settlements,    185,716 total population
-Ostland              - 263 settlements,    230,578 total population
-Reikland             - 563 settlements,    765,144 total population
-Stirland             - 314 settlements,    251,367 total population
-Talabecland          - 305 settlements,    359,104 total population
-Wissenland           - 497 settlements,    465,675 total population
+Averland             - 269 settlements,    309,335 total population
+Hochland             - 107 settlements,     84,239 total population
+Middenland           - 423 settlements,    396,588 total population
+Mootland             -  50 settlements,     26,019 total population
+Nordland             - 219 settlements,    193,378 total population
+Ostermark            - 240 settlements,    230,253 total population
+Ostland              - 263 settlements,    203,393 total population
+Reikland             - 563 settlements,    779,730 total population
+Stirland             - 314 settlements,    243,758 total population
+Talabecland          - 305 settlements,    359,960 total population
+Wissenland           - 497 settlements,    468,879 total population
 
-Empire Total Population: 3,265,784
-Westerland Total Population: 442,488
+Empire Total Population: 3,295,532
+Westerland Total Population: 465,135
 
 POINTS OF INTEREST
 --------------------------------------------------------------------------------
@@ -37,10 +37,9 @@ Total Points of Interest: 146
 ROADS
 --------------------------------------------------------------------------------
 Imperial Highways              -  38 roads
-Road                           - 770 roads
 
-Total Roads: 808
-Total Coordinate Points (all roads): 746,525
+Total Roads: 38
+Total Coordinate Points (all roads): 308,438
 
 DATA QUALITY ISSUES
 --------------------------------------------------------------------------------

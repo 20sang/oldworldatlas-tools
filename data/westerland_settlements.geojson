@@ -13,7 +13,7 @@
       "properties": {
         "name": "Erlach",
         "province": "",
-        "population": 196,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -34,7 +34,7 @@
       "properties": {
         "name": "Siert",
         "province": "",
-        "population": 100,
+        "population": 216,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -55,7 +55,7 @@
       "properties": {
         "name": "Ammerhuis",
         "province": "",
-        "population": 130,
+        "population": 126,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -76,9 +76,9 @@
       "properties": {
         "name": "Salfen",
         "province": "",
-        "population": 678,
+        "population": 141,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           280.07047,
           301.16876
@@ -118,9 +118,9 @@
       "properties": {
         "name": "Grimpengratz",
         "province": "",
-        "population": 100,
+        "population": 499,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           260.34698,
           322.51935
@@ -139,7 +139,7 @@
       "properties": {
         "name": "Lemmbourg",
         "province": "",
-        "population": 693,
+        "population": 463,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [
@@ -202,9 +202,9 @@
       "properties": {
         "name": "Keterveen",
         "province": "",
-        "population": 508,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           231.05125,
           327.44153
@@ -223,7 +223,7 @@
       "properties": {
         "name": "Maasten",
         "province": "",
-        "population": 275,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -244,7 +244,7 @@
       "properties": {
         "name": "Teskerdorp",
         "province": "",
-        "population": 100,
+        "population": 104,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -265,7 +265,7 @@
       "properties": {
         "name": "Koorst",
         "province": "",
-        "population": 100,
+        "population": 145,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -286,9 +286,9 @@
       "properties": {
         "name": "Vesterecht",
         "province": "",
-        "population": 165,
+        "population": 14334,
         "notes": [],
-        "size_category": 1,
+        "size_category": 4,
         "inkscape_coordinates": [
           269.87225,
           307.11395
@@ -307,9 +307,9 @@
       "properties": {
         "name": "Moerasstad",
         "province": "",
-        "population": 100,
+        "population": 332,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           293.93814,
           314.46378
@@ -328,7 +328,7 @@
       "properties": {
         "name": "Rijkersfort",
         "province": "",
-        "population": 212,
+        "population": 115,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -370,7 +370,7 @@
       "properties": {
         "name": "Almshoven",
         "province": "",
-        "population": 106,
+        "population": 129,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -391,9 +391,9 @@
       "properties": {
         "name": "Randstaad",
         "province": "",
-        "population": 100,
+        "population": 335,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           351.20517,
           239.33026
@@ -412,9 +412,9 @@
       "properties": {
         "name": "Loenen",
         "province": "",
-        "population": 1108,
+        "population": 149,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           345.58676,
           118.14624
@@ -433,9 +433,9 @@
       "properties": {
         "name": "Oostwald",
         "province": "",
-        "population": 100,
+        "population": 327,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           346.87427,
           131.40726
@@ -454,7 +454,7 @@
       "properties": {
         "name": "Stedum",
         "province": "",
-        "population": 1985,
+        "population": 318,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [
@@ -475,9 +475,9 @@
       "properties": {
         "name": "Aarnau",
         "province": "",
-        "population": 430,
+        "population": 7019,
         "notes": [],
-        "size_category": 2,
+        "size_category": 3,
         "inkscape_coordinates": [
           322.41925,
           65.804642
@@ -517,7 +517,7 @@
       "properties": {
         "name": "Haarskamp",
         "province": "",
-        "population": 262,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -538,9 +538,9 @@
       "properties": {
         "name": "Vasse",
         "province": "",
-        "population": 415,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           354.56351,
           219.67397
@@ -580,9 +580,9 @@
       "properties": {
         "name": "Ruttenkoop",
         "province": "",
-        "population": 100,
+        "population": 514,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           269.74603,
           342.63828
@@ -601,9 +601,9 @@
       "properties": {
         "name": "Heuveldorp",
         "province": "",
-        "population": 100,
+        "population": 954,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           244.27258,
           361.66351
@@ -622,7 +622,7 @@
       "properties": {
         "name": "Heppeldorp",
         "province": "",
-        "population": 207,
+        "population": 113,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -643,9 +643,9 @@
       "properties": {
         "name": "Fort Bergbes",
         "province": "",
-        "population": 100,
+        "population": 980,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           207.72742,
           341.88275
@@ -664,7 +664,7 @@
       "properties": {
         "name": "Kleindorpje",
         "province": "",
-        "population": 237,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -685,7 +685,7 @@
       "properties": {
         "name": "Grensstad",
         "province": "",
-        "population": 274,
+        "population": 215,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -706,9 +706,9 @@
       "properties": {
         "name": "Wouduin",
         "province": "",
-        "population": 330,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           358.44342,
           246.82304
@@ -727,7 +727,7 @@
       "properties": {
         "name": "Gorssel",
         "province": "",
-        "population": 814,
+        "population": 508,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [
@@ -790,7 +790,7 @@
       "properties": {
         "name": "Rotsachhaven",
         "province": "",
-        "population": 131,
+        "population": 227,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -811,9 +811,9 @@
       "properties": {
         "name": "Fort Solace",
         "province": "",
-        "population": 100,
+        "population": 502,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           251.29872,
           155.0661
@@ -853,7 +853,7 @@
       "properties": {
         "name": "Smerigwaard",
         "province": "",
-        "population": 100,
+        "population": 116,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -874,7 +874,7 @@
       "properties": {
         "name": "Klauperdorf",
         "province": "",
-        "population": 1806,
+        "population": 326,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [
@@ -895,7 +895,7 @@
       "properties": {
         "name": "Fessel",
         "province": "",
-        "population": 100,
+        "population": 109,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -916,9 +916,9 @@
       "properties": {
         "name": "Halsdorp",
         "province": "",
-        "population": 1023,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           259.89771,
           333.58539
@@ -937,9 +937,9 @@
       "properties": {
         "name": "Middeldijk",
         "province": "",
-        "population": 460,
+        "population": 159,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           273.64096,
           307.61771
@@ -958,9 +958,9 @@
       "properties": {
         "name": "Havenrijk",
         "province": "",
-        "population": 362,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           274.29993,
           318.36566
@@ -979,9 +979,9 @@
       "properties": {
         "name": "Kloosterdam",
         "province": "",
-        "population": 100,
+        "population": 428,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           281.27405,
           309.73282
@@ -1000,9 +1000,9 @@
       "properties": {
         "name": "Driewegen",
         "province": "",
-        "population": 314,
+        "population": 102,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           271.05029,
           305.43939
@@ -1021,9 +1021,9 @@
       "properties": {
         "name": "Oudegracht",
         "province": "",
-        "population": 192,
+        "population": 368,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           272.5134,
           321.79672
@@ -1063,7 +1063,7 @@
       "properties": {
         "name": "Zwanedam",
         "province": "",
-        "population": 271,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1105,7 +1105,7 @@
       "properties": {
         "name": "Zijlpoort",
         "province": "",
-        "population": 171,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1147,9 +1147,9 @@
       "properties": {
         "name": "Slangenmeer",
         "province": "",
-        "population": 100,
+        "population": 353,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           261.07147,
           314.69315
@@ -1168,9 +1168,9 @@
       "properties": {
         "name": "Gieterveen",
         "province": "",
-        "population": 1100,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           313.13104,
           294.61713
@@ -1189,7 +1189,7 @@
       "properties": {
         "name": "Blekersdijk",
         "province": "",
-        "population": 511,
+        "population": 353,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [
@@ -1231,7 +1231,7 @@
       "properties": {
         "name": "Kranegracht",
         "province": "",
-        "population": 100,
+        "population": 137,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1273,9 +1273,9 @@
       "properties": {
         "name": "Torenbroek",
         "province": "",
-        "population": 114,
+        "population": 373,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           281.59906,
           345.01855
@@ -1315,7 +1315,7 @@
       "properties": {
         "name": "Swartenmeer",
         "province": "",
-        "population": 100,
+        "population": 183,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1336,9 +1336,9 @@
       "properties": {
         "name": "Veldendam",
         "province": "",
-        "population": 321,
+        "population": 182,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           288.61328,
           303.13275
@@ -1399,9 +1399,9 @@
       "properties": {
         "name": "Slangenbroek",
         "province": "",
-        "population": 240,
+        "population": 692,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           323.77454,
           282.87903
@@ -1420,9 +1420,9 @@
       "properties": {
         "name": "Vlietdam",
         "province": "",
-        "population": 100,
+        "population": 10125,
         "notes": [],
-        "size_category": 1,
+        "size_category": 4,
         "inkscape_coordinates": [
           258.09457,
           328.73807
@@ -1462,9 +1462,9 @@
       "properties": {
         "name": "Vossenmeer",
         "province": "",
-        "population": 100,
+        "population": 393,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           280.5542,
           366.92349
@@ -1504,7 +1504,7 @@
       "properties": {
         "name": "Modderbroek",
         "province": "",
-        "population": 1967,
+        "population": 945,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [
@@ -1525,9 +1525,9 @@
       "properties": {
         "name": "Rietwaard",
         "province": "",
-        "population": 154,
+        "population": 1161,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           271.0513,
           320.01599
@@ -1546,9 +1546,9 @@
       "properties": {
         "name": "Zompveen",
         "province": "",
-        "population": 1903,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           275.78186,
           329.45874
@@ -1567,9 +1567,9 @@
       "properties": {
         "name": "Moerwijk",
         "province": "",
-        "population": 1308,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           275.99399,
           313.36261
@@ -1588,7 +1588,7 @@
       "properties": {
         "name": "Weckenfast",
         "province": "",
-        "population": 118,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1609,7 +1609,7 @@
       "properties": {
         "name": "Lehmburg",
         "province": "",
-        "population": 189,
+        "population": 156,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1630,7 +1630,7 @@
       "properties": {
         "name": "Frederichsdorp",
         "province": "",
-        "population": 218,
+        "population": 186,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1651,7 +1651,7 @@
       "properties": {
         "name": "Rutten",
         "province": "",
-        "population": 1613,
+        "population": 569,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [
@@ -1672,7 +1672,7 @@
       "properties": {
         "name": "Calden",
         "province": "",
-        "population": 203,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1693,9 +1693,9 @@
       "properties": {
         "name": "Didern",
         "province": "",
-        "population": 100,
+        "population": 701,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           269.74319,
           330.78638
@@ -1714,9 +1714,9 @@
       "properties": {
         "name": "Stapelhugel",
         "province": "",
-        "population": 2643,
+        "population": 100,
         "notes": [],
-        "size_category": 3,
+        "size_category": 1,
         "inkscape_coordinates": [
           313.26715,
           319.07858
@@ -1735,7 +1735,7 @@
       "properties": {
         "name": "Niddesdorf",
         "province": "",
-        "population": 124,
+        "population": 207,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1756,9 +1756,9 @@
       "properties": {
         "name": "Kleibroek aan Zee",
         "province": "",
-        "population": 6737,
+        "population": 336,
         "notes": [],
-        "size_category": 3,
+        "size_category": 2,
         "inkscape_coordinates": [
           308.70309,
           292.15723
@@ -1777,7 +1777,7 @@
       "properties": {
         "name": "Brakwaterdam",
         "province": "",
-        "population": 257,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1798,7 +1798,7 @@
       "properties": {
         "name": "Verdronkenhoek",
         "province": "",
-        "population": 289,
+        "population": 169,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1840,7 +1840,7 @@
       "properties": {
         "name": "Hoogkamp",
         "province": "",
-        "population": 314,
+        "population": 609,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [
@@ -1861,9 +1861,9 @@
       "properties": {
         "name": "Zwartweteren",
         "province": "",
-        "population": 496,
+        "population": 9761,
         "notes": [],
-        "size_category": 2,
+        "size_category": 4,
         "inkscape_coordinates": [
           315.35526,
           209.65016
@@ -1882,7 +1882,7 @@
       "properties": {
         "name": "Heidestein",
         "province": "",
-        "population": 250,
+        "population": 243,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1924,9 +1924,9 @@
       "properties": {
         "name": "Hogedam",
         "province": "",
-        "population": 230,
+        "population": 1372,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           316.29074,
           254.55145
@@ -1945,7 +1945,7 @@
       "properties": {
         "name": "Middenveld",
         "province": "",
-        "population": 100,
+        "population": 257,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -1966,9 +1966,9 @@
       "properties": {
         "name": "Kromdijk aan Zee",
         "province": "",
-        "population": 2653,
+        "population": 699,
         "notes": [],
-        "size_category": 3,
+        "size_category": 2,
         "inkscape_coordinates": [
           265.30905,
           185.60927
@@ -1987,9 +1987,9 @@
       "properties": {
         "name": "Driftstrand",
         "province": "",
-        "population": 417,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           255.86107,
           180.09016
@@ -2008,9 +2008,9 @@
       "properties": {
         "name": "Noordwindhaven",
         "province": "",
-        "population": 189,
+        "population": 1748,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           251.46449,
           156.98471
@@ -2029,9 +2029,9 @@
       "properties": {
         "name": "Kaap Tuinder",
         "province": "",
-        "population": 324,
+        "population": 157,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           253.33537,
           165.12308
@@ -2050,9 +2050,9 @@
       "properties": {
         "name": "Zeemond",
         "province": "",
-        "population": 100,
+        "population": 652,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           269.89273,
           199.54738
@@ -2113,7 +2113,7 @@
       "properties": {
         "name": "Brugwalde",
         "province": "",
-        "population": 100,
+        "population": 108,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -2134,9 +2134,9 @@
       "properties": {
         "name": "Dreumelholt",
         "province": "",
-        "population": 189,
+        "population": 387,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           318.75726,
           129.17387
@@ -2176,9 +2176,9 @@
       "properties": {
         "name": "Peelwijk",
         "province": "",
-        "population": 100,
+        "population": 545,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           317.43433,
           113.76189
@@ -2197,7 +2197,7 @@
       "properties": {
         "name": "Vloedwijk",
         "province": "",
-        "population": 130,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -2218,7 +2218,7 @@
       "properties": {
         "name": "Middelplaat",
         "province": "",
-        "population": 113,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -2239,9 +2239,9 @@
       "properties": {
         "name": "Oosterplaat",
         "province": "",
-        "population": 112,
+        "population": 635,
         "notes": [],
-        "size_category": 1,
+        "size_category": 2,
         "inkscape_coordinates": [
           278.73901,
           254.78484
@@ -2260,9 +2260,9 @@
       "properties": {
         "name": "Zandvoorde",
         "province": "",
-        "population": 1940,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           267.4281,
           230.31085
@@ -2281,9 +2281,9 @@
       "properties": {
         "name": "Noordwijker",
         "province": "",
-        "population": 1128,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           273.11664,
           125.20512
@@ -2302,9 +2302,9 @@
       "properties": {
         "name": "Woltersum",
         "province": "",
-        "population": 912,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           320.60934,
           203.65408
@@ -2323,9 +2323,9 @@
       "properties": {
         "name": "Heerenwerf",
         "province": "",
-        "population": 100,
+        "population": 2923,
         "notes": [],
-        "size_category": 1,
+        "size_category": 3,
         "inkscape_coordinates": [
           314.78851,
           215.42804
@@ -2344,9 +2344,9 @@
       "properties": {
         "name": "Zegveld",
         "province": "",
-        "population": 376,
+        "population": 182,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           341.64371,
           266.69107
@@ -2365,7 +2365,7 @@
       "properties": {
         "name": "Rijpermeer",
         "province": "",
-        "population": 139,
+        "population": 100,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -2386,7 +2386,7 @@
       "properties": {
         "name": "Bovenkarspel",
         "province": "",
-        "population": 245,
+        "population": 263,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -2407,7 +2407,7 @@
       "properties": {
         "name": "Schoonhoven",
         "province": "",
-        "population": 100,
+        "population": 194,
         "notes": [],
         "size_category": 1,
         "inkscape_coordinates": [
@@ -2428,9 +2428,9 @@
       "properties": {
         "name": "Kreekhuizen",
         "province": "",
-        "population": 794,
+        "population": 100,
         "notes": [],
-        "size_category": 2,
+        "size_category": 1,
         "inkscape_coordinates": [
           261.6734,
           298.90411
@@ -2449,7 +2449,7 @@
       "properties": {
         "name": "Buitenkaag",
         "province": "",
-        "population": 1273,
+        "population": 306,
         "notes": [],
         "size_category": 2,
         "inkscape_coordinates": [

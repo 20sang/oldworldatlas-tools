@@ -790,7 +790,7 @@ class SVGMapProcessor:
         logger.info(f"Generated {output_file}: {len(features)} POI")
 
     def generate_roads_geojson(self):
-        """Generate GeoJSON for roads."""
+        """Generate GeoJSON for roads with horizontally-formatted coordinates."""
         features = []
         for road in self.roads:
             feature = {
@@ -814,7 +814,29 @@ class SVGMapProcessor:
 
         output_file = OUTPUT_DIR / "empire_roads.geojson"
         with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(geojson, f, indent=2, ensure_ascii=False)
+            # Custom JSON formatting for readability - keep coordinate arrays on single lines
+            f.write('{\n  "type": "FeatureCollection",\n  "features": [\n')
+            for i, feature in enumerate(features):
+                f.write('    {\n')
+                f.write('      "type": "Feature",\n')
+                f.write('      "geometry": {\n')
+                f.write('        "type": "LineString",\n')
+                f.write('        "coordinates": [')
+                # Format coordinates horizontally
+                coords_str = ', '.join(f'[{lon}, {lat}]' for lon, lat in feature['geometry']['coordinates'])
+                f.write(coords_str)
+                f.write(']\n')
+                f.write('      },\n')
+                f.write('      "properties": {\n')
+                f.write(f'        "road_type": "{feature["properties"]["road_type"]}",\n')
+                f.write(f'        "road_id": "{feature["properties"]["road_id"]}",\n')
+                f.write(f'        "inkscape_coordinates": "{feature["properties"]["inkscape_coordinates"]}"\n')
+                f.write('      }\n')
+                f.write('    }')
+                if i < len(features) - 1:
+                    f.write(',')
+                f.write('\n')
+            f.write('  ]\n}\n')
 
         logger.info(f"Generated {output_file}: {len(features)} roads")
 
