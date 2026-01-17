@@ -362,8 +362,8 @@ class SVGMapProcessor:
             if settlement.name in populations:
                 settlement.population = populations[settlement.name]
             else:
-                # Generate random population with log-normal distribution
-                settlement.population = max(100, int(np.random.lognormal(mean=5, sigma=1.5)))
+                # Generate random population bounded between 100 and 800
+                settlement.population = np.random.randint(100, 801)
                 self.missing_population_data[settlement.province].append(settlement.name)
             
             settlement.size_category = self.assign_population_category(settlement.population)
@@ -374,7 +374,7 @@ class SVGMapProcessor:
             if settlement.name in populations:
                 settlement.population = populations[settlement.name]
             else:
-                settlement.population = max(100, int(np.random.lognormal(mean=5, sigma=1.5)))
+                settlement.population = np.random.randint(100, 801)
                 self.missing_population_data["Westerland"].append(settlement.name)
             
             settlement.size_category = self.assign_population_category(settlement.population)
