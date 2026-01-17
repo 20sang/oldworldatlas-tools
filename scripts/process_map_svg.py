@@ -1,0 +1,966 @@
+"""
+Comprehensive SVG map processing tool for the Old World Atlas.
+Extracts settlements, points of interest, and roads from the SETTLEMENTS_POI_ROADS.svg file.
+"""
+
+import json
+import csv
+import logging
+from pathlib import Path
+from typing import Dict, List, Tuple, Optional
+from xml.etree import ElementTree as ET
+from dataclasses import dataclass, asdict
+from collections import defaultdict
+import numpy as np
+from scipy.interpolate import CubicSpline
+import random
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
+
+# Constants
+SVG_PATH = Path(__file__).parent.parent.parent / "oldworldatlas-maps" / "SETTLEMENTS_POI_ROADS.svg"
+DATA_DIR = Path(__file__).parent.parent / "data" / "gazetteers"
+OUTPUT_DIR = Path(__file__).parent.parent / "data"
+
+# Calibration points for coordinate conversion
+CALIBRATION_POINTS = [
+    # SVG coords -> Geographic coords (longitude, latitude)
+    {"svg": (429.058, 408.152), "geo": (0.007, 51.465), "settlement": "Altdorf", "province": "Reikland"},
+    {"svg": (495.263, 187.911), "geo": (1.167, 55.318), "settlement": "Middenheim", "province": "Middenland"},
+    {"svg": (738.171, 778.741), "geo": (5.421, 44.977), "settlement": "Wachdorf", "province": "Averland"},
+    {"svg": (891.383, 479.367), "geo": (8.100, 50.219), "settlement": "Waldenhof (Stirland)", "province": "Stirland"},
+]
+
+NS = {
+    'svg': 'http://www.w3.org/2000/svg',
+    'inkscape': 'http://www.inkscape.org/namespaces/inkscape'
+}
+
+
+@dataclass
+class Settlement:
+    """Represents a settlement."""
+    name: str
+    province: str
+    svg_x: float
+    svg_y: float
+    geo_lon: float = 0.0
+    geo_lat: float = 0.0
+    population: int = 0
+    size_category: int = 1
+    notes: List[str] = None
+
+    def __post_init__(self):
+        if self.notes is None:
+            self.notes = []
+
+
+@dataclass
+class PointOfInterest:
+    """Represents a point of interest."""
+    name: str
+    poi_type: str
+    svg_x: float
+    svg_y: float
+    geo_lon: float = 0.0
+    geo_lat: float = 0.0
+
+
+@dataclass
+class Road:
+    """Represents a road."""
+    road_id: str
+    road_type: str
+    svg_path: str
+    geo_coordinates: List[Tuple[float, float]] = None
+
+    def __post_init__(self):
+        if self.geo_coordinates is None:
+            self.geo_coordinates = []
+
+
+class CoordinateConverter:
+    """Converts between SVG and geographic coordinate systems."""
+
+    def __init__(self, calibration_points: List[Dict]):
+        """Initialize with calibration points."""
+        self.calibration_points = calibration_points
+        self._calculate_transformation()
+
+    def _calculate_transformation(self):
+        """Calculate affine transformation parameters from calibration points."""
+        svg_coords = np.array([p["svg"] for p in self.calibration_points])
+        geo_coords = np.array([p["geo"] for p in self.calibration_points])
+
+        # Use least squares to fit affine transformation
+        # geo = A * svg + B where A is 2x2 and B is 2x1
+        A_matrix = np.hstack([svg_coords, np.ones((svg_coords.shape[0], 1))])
+        
+        # Solve for longitude
+        self.lon_coeffs = np.linalg.lstsq(A_matrix, geo_coords[:, 0], rcond=None)[0]
+        # Solve for latitude
+        self.lat_coeffs = np.linalg.lstsq(A_matrix, geo_coords[:, 1], rcond=None)[0]
+
+    def svg_to_geo(self, svg_x: float, svg_y: float) -> Tuple[float, float]:
+        """Convert SVG coordinates to geographic coordinates."""
+        lon = self.lon_coeffs[0] * svg_x + self.lon_coeffs[1] * svg_y + self.lon_coeffs[2]
+        lat = self.lat_coeffs[0] * svg_x + self.lat_coeffs[1] * svg_y + self.lat_coeffs[2]
+        return (lon, lat)
+
+    def validate_calibration(self):
+        """Validate the transformation against calibration points."""
+        logger.info("Validating coordinate transformation:")
+        for point in self.calibration_points:
+            calc_geo = self.svg_to_geo(point["svg"][0], point["svg"][1])
+            expected_geo = point["geo"]
+            error = np.sqrt((calc_geo[0] - expected_geo[0])**2 + (calc_geo[1] - expected_geo[1])**2)
+            logger.info(f"  {point['settlement']}: Calculated {calc_geo}, Expected {expected_geo}, Error: {error:.6f}")
+
+
+class SVGMapProcessor:
+    """Processes the SVG map file."""
+
+    def __init__(self):
+        """Initialize processor."""
+        self.tree = ET.parse(str(SVG_PATH))
+        self.root = self.tree.getroot()
+        self.converter = CoordinateConverter(CALIBRATION_POINTS)
+        self.converter.validate_calibration()
+
+        self.settlements_empire = []
+        self.settlements_westerland = []
+        self.points_of_interest = []
+        self.roads = []
+
+        self.invalid_settlements = []
+        self.duplicate_settlements = defaultdict(list)
+        self.missing_population_data = defaultdict(list)
+
+    def _get_text_element_label(self, elem) -> Optional[str]:
+        """Extract text from text/tspan elements."""
+        text_content = []
+        
+        # Check if it's a text element directly
+        if elem.tag == f"{{{NS['svg']}}}text":
+            # Look for tspan children
+            for tspan in elem.findall(f"{{{NS['svg']}}}tspan"):
+                if tspan.text:
+                    text_content.append(tspan.text.strip())
+            # If no tspan, check text directly
+            if not text_content and elem.text:
+                text_content.append(elem.text.strip())
+        
+        return " ".join(text_content) if text_content else None
+
+    def _validate_settlement_element(self, elem, province: str) -> Optional[Tuple[str, float, float]]:
+        """Validate that element is a textbox with valid coordinates and return (name, x, y)."""
+        # Check if it's a text element
+        if elem.tag != f"{{{NS['svg']}}}text":
+            self.invalid_settlements.append({
+                "province": province,
+                "element": elem.tag,
+                "reason": "Not a text element",
+                "attributes": dict(elem.attrib)
+            })
+            return None
+
+        # Get text content
+        name = self._get_text_element_label(elem)
+        if not name:
+            self.invalid_settlements.append({
+                "province": province,
+                "element": "text",
+                "reason": "No text content",
+                "attributes": dict(elem.attrib)
+            })
+            return None
+
+        # Get coordinates
+        try:
+            svg_x = float(elem.get("x", 0))
+            svg_y = float(elem.get("y", 0))
+            return (name, svg_x, svg_y)
+        except ValueError:
+            self.invalid_settlements.append({
+                "province": province,
+                "element": "text",
+                "name": name,
+                "reason": "Invalid coordinates",
+                "attributes": dict(elem.attrib)
+            })
+            return None
+
+    def _process_settlement_elements(self, parent_elem, province_name: str, settlements_dict: dict, settlements_list: list):
+        """Recursively process settlement elements, handling nested layers (like Reikland estates)."""
+        for elem in parent_elem:
+            # Check if this is a layer/group
+            if elem.tag == f"{{{NS['svg']}}}g":
+                # Recursively process children of this layer
+                self._process_settlement_elements(elem, province_name, settlements_dict, settlements_list)
+            else:
+                # Process as settlement element
+                result = self._validate_settlement_element(elem, province_name)
+                if result:
+                    name, svg_x, svg_y = result
+                    
+                    # Check for duplicates
+                    if name in settlements_dict:
+                        self.duplicate_settlements[province_name].append({
+                            "name": name,
+                            "occurrences": 2,
+                            "coordinates": [settlements_dict[name], (svg_x, svg_y)]
+                        })
+                    else:
+                        settlements_dict[name] = (svg_x, svg_y)
+
+                        # Convert coordinates
+                        geo_lon, geo_lat = self.converter.svg_to_geo(svg_x, svg_y)
+
+                        settlement = Settlement(
+                            name=name,
+                            province=province_name,
+                            svg_x=svg_x,
+                            svg_y=svg_y,
+                            geo_lon=geo_lon,
+                            geo_lat=geo_lat
+                        )
+                        settlements_list.append(settlement)
+
+    def process_settlements_empire(self):
+        """Process all Empire settlements."""
+        logger.info("Processing Empire settlements...")
+
+        # Find Settlements layer
+        settlements_layer = None
+        for g in self.root.findall(f".//{{{NS['svg']}}}g"):
+            if g.get(f"{{{NS['inkscape']}}}label") == "Settlements":
+                settlements_layer = g
+                break
+
+        if settlements_layer is None:
+            logger.error("Settlements layer not found!")
+            return
+
+        # Find Empire faction
+        empire_faction = None
+        for child in settlements_layer:
+            if child.get(f"{{{NS['inkscape']}}}label") == "Empire":
+                empire_faction = child
+                break
+
+        if empire_faction is None:
+            logger.error("Empire faction not found!")
+            return
+
+        # Process each province
+        provinces_seen = set()
+        for province_group in empire_faction:
+            province_name = province_group.get(f"{{{NS['inkscape']}}}label")
+            if not province_name:
+                continue
+
+            provinces_seen.add(province_name)
+            logger.info(f"  Processing province: {province_name}")
+
+            settlements_in_province = {}
+
+            # Extract settlements from this province (may be nested in sub-layers like estates)
+            self._process_settlement_elements(province_group, province_name, settlements_in_province, self.settlements_empire)
+
+        logger.info(f"  Found {len(self.settlements_empire)} valid settlements across {len(provinces_seen)} provinces")
+
+    def process_settlements_westerland(self):
+        """Process all Westerland settlements."""
+        logger.info("Processing Westerland settlements...")
+
+        # Find Settlements layer
+        settlements_layer = None
+        for g in self.root.findall(f".//{{{NS['svg']}}}g"):
+            if g.get(f"{{{NS['inkscape']}}}label") == "Settlements":
+                settlements_layer = g
+                break
+
+        if settlements_layer is None:
+            logger.error("Settlements layer not found!")
+            return
+
+        # Find Westerland faction
+        westerland_faction = None
+        for child in settlements_layer:
+            if child.get(f"{{{NS['inkscape']}}}label") == "Westerland":
+                westerland_faction = child
+                break
+
+        if westerland_faction is None:
+            logger.error("Westerland faction not found!")
+            return
+
+        settlements_in_faction = {}
+
+        # Extract settlements from Westerland (may be nested in sub-layers)
+        self._process_settlement_elements(westerland_faction, "Westerland", settlements_in_faction, self.settlements_westerland)
+
+        logger.info(f"  Found {len(self.settlements_westerland)} valid Westerland settlements")
+
+    def load_population_data(self, faction: str, province: Optional[str] = None) -> Dict[str, int]:
+        """Load population data from CSV files."""
+        populations = {}
+
+        if faction == "Empire" and province:
+            csv_file = DATA_DIR / "The-Empire" / f"{province.lower()}.csv"
+            if csv_file.exists():
+                with open(csv_file, 'r', encoding='utf-8') as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        if len(row) >= 2:
+                            settlement_name = row[0].strip()
+                            try:
+                                population = int(row[1].strip())
+                                populations[settlement_name] = population
+                            except ValueError:
+                                pass
+
+        elif faction == "Westerland":
+            csv_file = DATA_DIR / "Westerland" / "westerland.csv"
+            if csv_file.exists():
+                with open(csv_file, 'r', encoding='utf-8') as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        if len(row) >= 2:
+                            settlement_name = row[0].strip()
+                            try:
+                                population = int(row[1].strip())
+                                populations[settlement_name] = population
+                            except ValueError:
+                                pass
+
+        return populations
+
+    def assign_population_category(self, population: int) -> int:
+        """Assign size category based on population."""
+        if population <= 300:
+            return 1  # Hamlet
+        elif population <= 2000:
+            return 2  # Village
+        elif population <= 9000:
+            return 3  # Town
+        elif population <= 20000:
+            return 4  # City
+        else:
+            return 5  # Large City
+
+    def populate_settlement_data(self):
+        """Load population data from CSVs and assign to settlements."""
+        logger.info("Loading population data...")
+
+        # Process Empire settlements
+        for settlement in self.settlements_empire:
+            populations = self.load_population_data("Empire", settlement.province)
+            
+            if settlement.name in populations:
+                settlement.population = populations[settlement.name]
+            else:
+                # Generate random population with log-normal distribution
+                settlement.population = max(100, int(np.random.lognormal(mean=5, sigma=1.5)))
+                self.missing_population_data[settlement.province].append(settlement.name)
+            
+            settlement.size_category = self.assign_population_category(settlement.population)
+
+        # Process Westerland settlements
+        populations = self.load_population_data("Westerland")
+        for settlement in self.settlements_westerland:
+            if settlement.name in populations:
+                settlement.population = populations[settlement.name]
+            else:
+                settlement.population = max(100, int(np.random.lognormal(mean=5, sigma=1.5)))
+                self.missing_population_data["Westerland"].append(settlement.name)
+            
+            settlement.size_category = self.assign_population_category(settlement.population)
+
+        # Log missing population data
+        if self.missing_population_data:
+            logger.warning("Settlements with randomly assigned populations:")
+            for province, settlements in self.missing_population_data.items():
+                logger.warning(f"  {province}: {len(settlements)} settlements")
+
+    def _process_poi_elements(self, parent_elem, poi_type: str, poi_list: list):
+        """Recursively process POI elements, handling nested layers."""
+        for elem in parent_elem:
+            # Check if this is a layer/group
+            if elem.tag == f"{{{NS['svg']}}}g":
+                # Recursively process children of this layer
+                self._process_poi_elements(elem, poi_type, poi_list)
+            elif elem.tag == f"{{{NS['svg']}}}text":
+                name = self._get_text_element_label(elem)
+                if name:
+                    try:
+                        svg_x = float(elem.get("x", 0))
+                        svg_y = float(elem.get("y", 0))
+                        geo_lon, geo_lat = self.converter.svg_to_geo(svg_x, svg_y)
+                        
+                        poi = PointOfInterest(
+                            name=name,
+                            poi_type=poi_type,
+                            svg_x=svg_x,
+                            svg_y=svg_y,
+                            geo_lon=geo_lon,
+                            geo_lat=geo_lat
+                        )
+                        poi_list.append(poi)
+                    except (ValueError, TypeError):
+                        pass
+
+    def process_points_of_interest(self):
+        """Process all points of interest."""
+        logger.info("Processing Points of Interest...")
+
+        # Find Points of Interest layer
+        poi_layer = None
+        for g in self.root.findall(f".//{{{NS['svg']}}}g"):
+            if g.get(f"{{{NS['inkscape']}}}label") == "Points of Interest":
+                poi_layer = g
+                break
+
+        if poi_layer is None:
+            logger.error("Points of Interest layer not found!")
+            return
+
+        poi_types = {
+            "Other": "Other",
+            "City Districts": "City Districts",
+            "Forts and Castles": "Forts and Castles",
+            "Monastaries and Temples": "Monasteries and Temples",
+            "Taverns and Inns": "Taverns and Inns"
+        }
+
+        for poi_group in poi_layer:
+            poi_type = poi_group.get(f"{{{NS['inkscape']}}}label")
+            if not poi_type:
+                continue
+
+            poi_type = poi_types.get(poi_type, poi_type)
+            logger.info(f"  Processing POI type: {poi_type}")
+
+            # Extract POI from this group (may be nested in sub-layers)
+            initial_count = len(self.points_of_interest)
+            self._process_poi_elements(poi_group, poi_type, self.points_of_interest)
+            count = len(self.points_of_interest) - initial_count
+
+            logger.info(f"    Found {count} POI")
+
+    def parse_svg_path(self, path_d: str) -> List[Tuple[float, float]]:
+        """Parse SVG path data and extract coordinates, handling both absolute and relative commands."""
+        points = []
+        import re
+
+        # Remove extra spaces and split on commands and commas
+        path_d = re.sub(r'([MmLlHhVvCcSsQqTtAaZz])', r' \1 ', path_d)
+        path_d = path_d.replace(',', ' ')  # Split on commas too
+        tokens = [t for t in path_d.split() if t.strip()]
+
+        x, y = 0, 0  # Current position
+        start_x, start_y = 0, 0  # Start position for closepath
+        command = None
+        last_cp2 = (0, 0)  # Last control point for smooth curves
+
+        i = 0
+        while i < len(tokens):
+            token = tokens[i]
+            
+            if token in 'MmLlHhVvCcSsQqTtAaZz':
+                command = token
+                i += 1
+            else:
+                try:
+                    if command in 'Mm':
+                        # Move command
+                        num_x = float(token)
+                        i += 1
+                        if i < len(tokens) and tokens[i] not in 'MmLlHhVvCcSsQqTtAaZz':
+                            num_y = float(tokens[i])
+                            i += 1
+                        else:
+                            continue
+                        
+                        if command == 'M':
+                            # Absolute move
+                            x, y = num_x, num_y
+                        else:
+                            # Relative move
+                            x += num_x
+                            y += num_y
+                        
+                        start_x, start_y = x, y
+                        points.append((x, y))
+                        
+                    elif command in 'Ll':
+                        # Line command
+                        num_x = float(token)
+                        i += 1
+                        if i < len(tokens) and tokens[i] not in 'MmLlHhVvCcSsQqTtAaZz':
+                            num_y = float(tokens[i])
+                            i += 1
+                        else:
+                            continue
+                        
+                        if command == 'L':
+                            x, y = num_x, num_y
+                        else:
+                            x += num_x
+                            y += num_y
+                        
+                        points.append((x, y))
+                        
+                    elif command == 'H':
+                        # Horizontal line (absolute)
+                        x = float(token)
+                        i += 1
+                        points.append((x, y))
+                        
+                    elif command == 'h':
+                        # Horizontal line (relative)
+                        x += float(token)
+                        i += 1
+                        points.append((x, y))
+                        
+                    elif command == 'V':
+                        # Vertical line (absolute)
+                        y = float(token)
+                        i += 1
+                        points.append((x, y))
+                        
+                    elif command == 'v':
+                        # Vertical line (relative)
+                        y += float(token)
+                        i += 1
+                        points.append((x, y))
+                        
+                    elif command in 'Cc':
+                        # Bezier curve - collect all 6 numbers
+                        curve_points = [float(token)]
+                        i += 1
+                        for _ in range(5):
+                            if i < len(tokens) and tokens[i] not in 'MmLlHhVvCcSsQqTtAaZz':
+                                curve_points.append(float(tokens[i]))
+                                i += 1
+                            else:
+                                break
+                        
+                        if len(curve_points) == 6:
+                            cp1_x, cp1_y, cp2_x, cp2_y, end_x, end_y = curve_points
+                            
+                            if command == 'c':
+                                # Relative Bezier
+                                cp1_x += x
+                                cp1_y += y
+                                cp2_x += x
+                                cp2_y += y
+                                end_x += x
+                                end_y += y
+                            
+                            # Sample along the curve
+                            sampled = self._sample_bezier_curve(
+                                (x, y),
+                                (cp1_x, cp1_y),
+                                (cp2_x, cp2_y),
+                                (end_x, end_y)
+                            )
+                            points.extend(sampled)
+                            
+                            x, y = end_x, end_y
+                            last_cp2 = (cp2_x, cp2_y)
+                    else:
+                        i += 1
+                except ValueError:
+                    i += 1
+
+        return points
+
+    def _sample_bezier_curve(self, start: Tuple[float, float], cp1: Tuple[float, float],
+                             cp2: Tuple[float, float], end: Tuple[float, float],
+                             samples: int = 20) -> List[Tuple[float, float]]:
+        """Sample points along a cubic Bezier curve."""
+        points = []
+        for t in np.linspace(0, 1, samples):
+            mt = 1 - t
+            x = (mt**3 * start[0] + 3*mt**2*t * cp1[0] + 3*mt*t**2 * cp2[0] + t**3 * end[0])
+            y = (mt**3 * start[1] + 3*mt**2*t * cp1[1] + 3*mt*t**2 * cp2[1] + t**3 * end[1])
+            points.append((x, y))
+        return points
+
+    def _process_road_elements(self, parent_elem, road_type: str, road_list: list, road_id_ref: list):
+        """Recursively process road elements, handling nested layers."""
+        for elem in parent_elem:
+            # Check if this is a layer/group
+            if elem.tag == f"{{{NS['svg']}}}g":
+                # Recursively process children of this layer
+                self._process_road_elements(elem, road_type, road_list, road_id_ref)
+            elif elem.tag == f"{{{NS['svg']}}}path":
+                path_d = elem.get("d", "")
+                if path_d:
+                    try:
+                        svg_points = self.parse_svg_path(path_d)
+                        
+                        if svg_points:
+                            # Convert to geographic coordinates
+                            geo_points = [
+                                self.converter.svg_to_geo(pt[0], pt[1])
+                                for pt in svg_points
+                            ]
+
+                            road = Road(
+                                road_id=f"road_{road_id_ref[0]:03d}",
+                                road_type=road_type,
+                                svg_path=path_d,
+                                geo_coordinates=geo_points
+                            )
+                            road_list.append(road)
+                            road_id_ref[0] += 1
+                    except Exception as e:
+                        logger.warning(f"    Error processing road: {e}")
+
+    def process_roads(self):
+        """Process all roads."""
+        logger.info("Processing Roads...")
+
+        # Find ALL Roads layers
+        roads_layers = []
+        for g in self.root.findall(f".//{{{NS['svg']}}}g"):
+            if g.get(f"{{{NS['inkscape']}}}label") == "Roads":
+                roads_layers.append(g)
+
+        if not roads_layers:
+            logger.error("Roads layers not found!")
+            return
+
+        road_type_map = {
+            "Imperial Highways": "Imperial Highways",
+            "Roads": "Roads",
+            "Paths": "Paths"
+        }
+
+        road_id_ref = [0]  # Use list to allow modification in nested function
+
+        # Process each Roads layer
+        for roads_idx, roads_layer in enumerate(roads_layers):
+            logger.info(f"  Processing Roads layer {roads_idx + 1}...")
+            
+            # Check if this layer has direct path elements (unlabeled roads)
+            direct_paths = [child for child in roads_layer if child.tag == f"{{{NS['svg']}}}path"]
+            
+            if direct_paths:
+                # This layer contains direct paths - process them as unlabeled roads
+                logger.info(f"    Found {len(direct_paths)} unlabeled road paths")
+                successful = 0
+                for path_idx, path_elem in enumerate(direct_paths):
+                    path_d = path_elem.get("d", "")
+                    if path_d:
+                        try:
+                            svg_points = self.parse_svg_path(path_d)
+                            
+                            if svg_points:
+                                # Convert to geographic coordinates
+                                geo_points = [
+                                    self.converter.svg_to_geo(pt[0], pt[1])
+                                    for pt in svg_points
+                                ]
+
+                                road = Road(
+                                    road_id=f"road_{road_id_ref[0]:03d}",
+                                    road_type="Road",
+                                    svg_path=path_d,
+                                    geo_coordinates=geo_points
+                                )
+                                self.roads.append(road)
+                                road_id_ref[0] += 1
+                                successful += 1
+                        except Exception as e:
+                            if path_idx < 3:  # Log first 3 errors only
+                                logger.debug(f"    Error processing road {path_idx}: {str(e)[:100]}")
+            else:
+                # This layer contains labeled road type groups
+                for road_group in roads_layer:
+                    road_type = road_group.get(f"{{{NS['inkscape']}}}label")
+                    if not road_type or road_type not in road_type_map:
+                        continue
+
+                    road_type = road_type_map.get(road_type, road_type)
+                    logger.info(f"    Processing road type: {road_type}")
+
+                    # Extract roads from this group (may be nested in sub-layers)
+                    initial_count = len(self.roads)
+                    self._process_road_elements(road_group, road_type, self.roads, road_id_ref)
+                    count = len(self.roads) - initial_count
+
+                    logger.info(f"      Found {count} roads")
+
+    def generate_empire_geojson(self):
+        """Generate GeoJSON for Empire settlements."""
+        features = []
+        for settlement in self.settlements_empire:
+            feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [settlement.geo_lon, settlement.geo_lat]
+                },
+                "properties": {
+                    "name": settlement.name,
+                    "province": settlement.province,
+                    "population": settlement.population,
+                    "notes": settlement.notes,
+                    "size_category": settlement.size_category,
+                    "inkscape_coordinates": [settlement.svg_x, settlement.svg_y]
+                }
+            }
+            features.append(feature)
+
+        geojson = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+
+        output_file = OUTPUT_DIR / "empire_settlements.geojson"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(geojson, f, indent=2, ensure_ascii=False)
+
+        logger.info(f"Generated {output_file}: {len(features)} settlements")
+
+    def generate_westerland_geojson(self):
+        """Generate GeoJSON for Westerland settlements."""
+        features = []
+        for settlement in self.settlements_westerland:
+            feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [settlement.geo_lon, settlement.geo_lat]
+                },
+                "properties": {
+                    "name": settlement.name,
+                    "province": "",
+                    "population": settlement.population,
+                    "notes": settlement.notes,
+                    "size_category": settlement.size_category,
+                    "inkscape_coordinates": [settlement.svg_x, settlement.svg_y]
+                }
+            }
+            features.append(feature)
+
+        geojson = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+
+        output_file = OUTPUT_DIR / "westerland_settlements.geojson"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(geojson, f, indent=2, ensure_ascii=False)
+
+        logger.info(f"Generated {output_file}: {len(features)} settlements")
+
+    def generate_poi_geojson(self):
+        """Generate GeoJSON for points of interest."""
+        features = []
+        for poi in self.points_of_interest:
+            feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [poi.geo_lon, poi.geo_lat]
+                },
+                "properties": {
+                    "name": poi.name,
+                    "type": poi.poi_type,
+                    "inkscape_coordinates": [poi.svg_x, poi.svg_y]
+                }
+            }
+            features.append(feature)
+
+        geojson = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+
+        output_file = OUTPUT_DIR / "points_of_interest.geojson"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(geojson, f, indent=2, ensure_ascii=False)
+
+        logger.info(f"Generated {output_file}: {len(features)} POI")
+
+    def generate_roads_geojson(self):
+        """Generate GeoJSON for roads."""
+        features = []
+        for road in self.roads:
+            feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": road.geo_coordinates
+                },
+                "properties": {
+                    "road_type": road.road_type,
+                    "road_id": road.road_id,
+                    "inkscape_coordinates": road.svg_path
+                }
+            }
+            features.append(feature)
+
+        geojson = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+
+        output_file = OUTPUT_DIR / "empire_roads.geojson"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(geojson, f, indent=2, ensure_ascii=False)
+
+        logger.info(f"Generated {output_file}: {len(features)} roads")
+
+    def write_invalid_settlements_log(self):
+        """Write log of invalid settlement elements."""
+        if not self.invalid_settlements:
+            return
+
+        output_file = OUTPUT_DIR / "invalid_settlement_elements.log"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write("Invalid Settlement Elements Log\n")
+            f.write("=" * 80 + "\n\n")
+            f.write(f"Total invalid elements: {len(self.invalid_settlements)}\n\n")
+
+            for item in self.invalid_settlements:
+                f.write(f"Province: {item.get('province', 'N/A')}\n")
+                f.write(f"Reason: {item.get('reason', 'N/A')}\n")
+                if 'name' in item:
+                    f.write(f"Name: {item['name']}\n")
+                f.write(f"Attributes: {item.get('attributes', {})}\n")
+                f.write("-" * 80 + "\n")
+
+        logger.info(f"Generated {output_file}")
+
+    def write_duplicate_settlements_log(self):
+        """Write log of duplicate settlements."""
+        if not self.duplicate_settlements:
+            return
+
+        output_file = OUTPUT_DIR / "duplicate_settlements.log"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write("Duplicate Settlements Log\n")
+            f.write("=" * 80 + "\n\n")
+            total_duplicates = sum(len(v) for v in self.duplicate_settlements.values())
+            f.write(f"Total provinces with duplicates: {len(self.duplicate_settlements)}\n")
+            f.write(f"Total duplicate entries: {total_duplicates}\n\n")
+
+            for province, duplicates in self.duplicate_settlements.items():
+                f.write(f"Province: {province}\n")
+                for dup in duplicates:
+                    f.write(f"  Name: {dup['name']}\n")
+                    f.write(f"  Coordinates: {dup.get('coordinates', [])}\n")
+                f.write("-" * 80 + "\n")
+
+        logger.info(f"Generated {output_file}")
+
+    def generate_report(self):
+        """Generate the processing report."""
+        output_file = OUTPUT_DIR / "processing_report.txt"
+
+        # Calculate statistics
+        empire_pop_by_province = defaultdict(int)
+        empire_count_by_province = defaultdict(int)
+
+        for settlement in self.settlements_empire:
+            empire_pop_by_province[settlement.province] += settlement.population
+            empire_count_by_province[settlement.province] += 1
+
+        westerland_total_pop = sum(s.population for s in self.settlements_westerland)
+        westerland_total_count = len(self.settlements_westerland)
+
+        total_road_points = sum(len(road.geo_coordinates) for road in self.roads)
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write("Old World Atlas Map Processing Report\n")
+            f.write("=" * 80 + "\n\n")
+
+            f.write("SETTLEMENTS SUMMARY\n")
+            f.write("-" * 80 + "\n")
+            f.write(f"Empire Total: {len(self.settlements_empire)} settlements\n")
+            f.write(f"Westerland Total: {westerland_total_count} settlements\n")
+            f.write(f"Grand Total: {len(self.settlements_empire) + westerland_total_count} settlements\n\n")
+
+            f.write("EMPIRE SETTLEMENTS BY PROVINCE\n")
+            f.write("-" * 80 + "\n")
+            for province in sorted(empire_count_by_province.keys()):
+                count = empire_count_by_province[province]
+                pop = empire_pop_by_province[province]
+                f.write(f"{province:20s} - {count:3d} settlements, {pop:10,d} total population\n")
+
+            f.write(f"\nEmpire Total Population: {sum(empire_pop_by_province.values()):,d}\n")
+            f.write(f"Westerland Total Population: {westerland_total_pop:,d}\n\n")
+
+            f.write("POINTS OF INTEREST\n")
+            f.write("-" * 80 + "\n")
+            poi_by_type = defaultdict(int)
+            for poi in self.points_of_interest:
+                poi_by_type[poi.poi_type] += 1
+            for poi_type in sorted(poi_by_type.keys()):
+                count = poi_by_type[poi_type]
+                f.write(f"{poi_type:30s} - {count:3d} POI\n")
+            f.write(f"\nTotal Points of Interest: {len(self.points_of_interest)}\n\n")
+
+            f.write("ROADS\n")
+            f.write("-" * 80 + "\n")
+            roads_by_type = defaultdict(int)
+            for road in self.roads:
+                roads_by_type[road.road_type] += 1
+            for road_type in sorted(roads_by_type.keys()):
+                count = roads_by_type[road_type]
+                f.write(f"{road_type:30s} - {count:3d} roads\n")
+            f.write(f"\nTotal Roads: {len(self.roads)}\n")
+            f.write(f"Total Coordinate Points (all roads): {total_road_points:,d}\n\n")
+
+            f.write("DATA QUALITY ISSUES\n")
+            f.write("-" * 80 + "\n")
+            f.write(f"Invalid Settlement Elements: {len(self.invalid_settlements)}\n")
+            f.write(f"Provinces with Duplicate Names: {len(self.duplicate_settlements)}\n")
+            f.write(f"Settlements with Assigned Population Data: {sum(len(v) for v in self.missing_population_data.values())}\n\n")
+
+            if self.missing_population_data:
+                f.write("Settlements with Randomly Assigned Populations:\n")
+                for province, settlements in sorted(self.missing_population_data.items()):
+                    f.write(f"  {province}: {len(settlements)} settlements\n")
+
+        logger.info(f"Generated {output_file}")
+
+
+def main():
+    """Main entry point."""
+    logger.info("Starting SVG map processing...")
+
+    processor = SVGMapProcessor()
+
+    # Process all data
+    processor.process_settlements_empire()
+    processor.process_settlements_westerland()
+    processor.populate_settlement_data()
+    processor.process_points_of_interest()
+    processor.process_roads()
+
+    # Generate output files
+    processor.generate_empire_geojson()
+    processor.generate_westerland_geojson()
+    processor.generate_poi_geojson()
+    processor.generate_roads_geojson()
+
+    # Write logs
+    processor.write_invalid_settlements_log()
+    processor.write_duplicate_settlements_log()
+
+    # Generate report
+    processor.generate_report()
+
+    logger.info("Processing complete!")
+
+
+if __name__ == "__main__":
+    main()

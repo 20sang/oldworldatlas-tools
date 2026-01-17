@@ -1,0 +1,63 @@
+Old World Atlas Map Processing Report
+================================================================================
+
+SETTLEMENTS SUMMARY
+--------------------------------------------------------------------------------
+Empire Total: 3250 settlements
+Westerland Total: 117 settlements
+Grand Total: 3367 settlements
+
+EMPIRE SETTLEMENTS BY PROVINCE
+--------------------------------------------------------------------------------
+Averland             - 269 settlements,    295,677 total population
+Hochland             - 107 settlements,    102,911 total population
+Middenland           - 423 settlements,    403,286 total population
+Mootland             -  50 settlements,     23,201 total population
+Nordland             - 219 settlements,    183,125 total population
+Ostermark            - 240 settlements,    185,716 total population
+Ostland              - 263 settlements,    230,578 total population
+Reikland             - 563 settlements,    765,144 total population
+Stirland             - 314 settlements,    251,367 total population
+Talabecland          - 305 settlements,    359,104 total population
+Wissenland           - 497 settlements,    465,675 total population
+
+Empire Total Population: 3,265,784
+Westerland Total Population: 442,488
+
+POINTS OF INTEREST
+--------------------------------------------------------------------------------
+City Districts                 -   9 POI
+Forts and Castles              -  78 POI
+Monasteries and Temples        -   8 POI
+Other                          -   6 POI
+Taverns and Inns               -  45 POI
+
+Total Points of Interest: 146
+
+ROADS
+--------------------------------------------------------------------------------
+Imperial Highways              -  38 roads
+Road                           - 770 roads
+
+Total Roads: 808
+Total Coordinate Points (all roads): 746,525
+
+DATA QUALITY ISSUES
+--------------------------------------------------------------------------------
+Invalid Settlement Elements: 1
+Provinces with Duplicate Names: 3
+Settlements with Assigned Population Data: 2754
+
+Settlements with Randomly Assigned Populations:
+  Averland: 221 settlements
+  Hochland: 79 settlements
+  Middenland: 374 settlements
+  Mootland: 42 settlements
+  Nordland: 156 settlements
+  Ostermark: 192 settlements
+  Ostland: 204 settlements
+  Reikland: 489 settlements
+  Stirland: 226 settlements
+  Talabecland: 227 settlements
+  Westerland: 112 settlements
+  Wissenland: 432 settlements
