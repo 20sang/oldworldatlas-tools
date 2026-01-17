@@ -342,11 +342,11 @@ class SVGMapProcessor:
         """Assign size category based on population."""
         if population <= 300:
             return 1  # Hamlet
-        elif population <= 2000:
+        elif population <= 900:
             return 2  # Village
-        elif population <= 9000:
+        elif population <= 3000:
             return 3  # Town
-        elif population <= 20000:
+        elif population <=15000:
             return 4  # City
         else:
             return 5  # Large City
