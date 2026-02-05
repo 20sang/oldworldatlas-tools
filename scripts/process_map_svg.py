@@ -6,6 +6,7 @@ Extracts settlements, points of interest, and labels from the FULL_MAP_CLEANED.s
 import json
 import csv
 import logging
+import re
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 from xml.etree import ElementTree as ET
@@ -200,6 +201,20 @@ class SVGMapProcessor:
                 text_content.append(elem.text.strip())
         
         return " ".join(text_content) if text_content else None
+
+    def _apply_svg_transform(self, x: float, y: float, transform: str) -> Tuple[float, float]:
+        """Apply SVG transform attribute to coordinates. Currently supports translate only."""
+        if not transform:
+            return (x, y)
+        
+        # Parse translate(x, y) or translate(x y)
+        translate_match = re.search(r'translate\s*\(\s*([-\d.]+)\s*[,\s]\s*([-\d.]+)\s*\)', transform)
+        if translate_match:
+            tx = float(translate_match.group(1))
+            ty = float(translate_match.group(2))
+            return (x + tx, y + ty)
+        
+        return (x, y)
 
     def _validate_settlement_element(self, elem, province: str) -> Optional[Tuple[str, float, float]]:
         """Validate that element is a textbox with valid coordinates and return (name, x, y)."""
@@ -1044,7 +1059,9 @@ class SVGMapProcessor:
                     if marsh_layer_name and marsh_layer_name in waterbody_type_map:
                         waterbody_type = waterbody_type_map[marsh_layer_name]
                         initial_count = len(self.water_labels)
-                        self._process_water_label_elements(marsh_group, waterbody_type, self.water_labels)
+                        # Get transform from marsh_group if it exists
+                        marsh_transform = marsh_group.get("transform", "")
+                        self._process_water_label_elements(marsh_group, waterbody_type, self.water_labels, marsh_transform)
                         count = len(self.water_labels) - initial_count
                         logger.info(f"    Found {count} {waterbody_type} labels")
             # Handle lakes which is a new tier
@@ -1052,7 +1069,8 @@ class SVGMapProcessor:
                 logger.info(f"  Processing lakes...")
                 waterbody_type = waterbody_type_map[layer_name]
                 initial_count = len(self.water_labels)
-                self._process_water_label_elements(water_group, waterbody_type, self.water_labels)
+                lakes_transform = water_group.get("transform", "")
+                self._process_water_label_elements(water_group, waterbody_type, self.water_labels, lakes_transform)
                 count = len(self.water_labels) - initial_count
                 logger.info(f"    Found {count} {waterbody_type} labels")
             elif layer_name in waterbody_type_map:
@@ -1061,24 +1079,37 @@ class SVGMapProcessor:
                 
                 # Extract labels from this group
                 initial_count = len(self.water_labels)
-                self._process_water_label_elements(water_group, waterbody_type, self.water_labels)
+                group_transform = water_group.get("transform", "")
+                self._process_water_label_elements(water_group, waterbody_type, self.water_labels, group_transform)
                 count = len(self.water_labels) - initial_count
 
                 logger.info(f"    Found {count} labels")
 
-    def _process_water_label_elements(self, parent_elem, waterbody_type: str, label_list: list):
-        """Recursively process water label elements, handling nested layers."""
+    def _process_water_label_elements(self, parent_elem, waterbody_type: str, label_list: list, parent_transform: str = ""):
+        """Recursively process water label elements, handling nested layers and transforms."""
         for elem in parent_elem:
             # Check if this is a layer/group
             if elem.tag == f"{{{NS['svg']}}}g":
-                # Recursively process children of this layer
-                self._process_water_label_elements(elem, waterbody_type, label_list)
+                # Get group transform and accumulate with parent
+                group_transform = elem.get("transform", "")
+                # Combine transforms: if both exist, concatenate them
+                combined_transform = (parent_transform + " " + group_transform).strip() if group_transform else parent_transform
+                # Recursively process children with accumulated transform
+                self._process_water_label_elements(elem, waterbody_type, label_list, combined_transform)
             elif elem.tag == f"{{{NS['svg']}}}text":
                 name = self._get_text_element_label(elem)
                 if name:
                     try:
                         svg_x = float(elem.get("x", 0))
                         svg_y = float(elem.get("y", 0))
+                        
+                        # Apply element-level transform if present
+                        transform = elem.get("transform", "")
+                        svg_x, svg_y = self._apply_svg_transform(svg_x, svg_y, transform)
+                        
+                        # Apply parent/group transform
+                        svg_x, svg_y = self._apply_svg_transform(svg_x, svg_y, parent_transform)
+                        
                         geo_lon, geo_lat = self.converter.svg_to_geo(svg_x, svg_y)
                         
                         label = WaterLabel(
